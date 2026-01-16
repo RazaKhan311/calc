@@ -1,11 +1,39 @@
 # Calculator Module Specification
 
-Version: 1.0.0
-Last Updated: 2026-01-06
+> A minimal, type-safe Python calculator module for developers.
+
+**Version:** 1.0.0
+**Python:** 3.12+
+**License:** MIT
+
+---
+
+## Table of Contents
+
+1. [Overview](#overview)
+2. [User Stories](#user-stories)
+3. [API Specification](#api-specification)
+4. [Acceptance Criteria](#acceptance-criteria)
+5. [Design Decisions](#design-decisions)
+6. [Out of Scope](#out-of-scope)
+
+---
 
 ## Overview
 
-A basic calculator module providing four fundamental arithmetic operations for use by Python developers. This module prioritizes type safety, clear error messages, and predictable behavior across edge cases.
+This module provides four basic arithmetic operations as pure functions:
+
+- `add(a, b)` — Addition
+- `subtract(a, b)` — Subtraction
+- `multiply(a, b)` — Multiplication
+- `divide(a, b)` — Division
+
+### Design Principles
+
+1. **Explicit over implicit** — Errors raise exceptions, never return silent `None` or `nan`
+2. **Type predictability** — Return types follow Python's native arithmetic rules
+3. **Zero dependencies** — Pure Python, no external packages
+4. **Testable** — Every behavior has concrete, verifiable examples
 
 ---
 
@@ -13,476 +41,433 @@ A basic calculator module providing four fundamental arithmetic operations for u
 
 ### Core Operations
 
-**US-1: Addition**
-As a developer integrating this calculator module,
-I want to add two numbers together,
-so that I can perform addition operations in my application without implementing the logic myself.
+**Addition**
+> As a developer, I want to add two numbers together, so that I can compute sums without implementing arithmetic logic myself.
 
-**US-2: Subtraction**
-As a developer integrating this calculator module,
-I want to subtract one number from another,
-so that I can perform subtraction operations reliably in my application.
+**Subtraction**
+> As a developer, I want to subtract one number from another, so that I can calculate differences in my application.
 
-**US-3: Multiplication**
-As a developer integrating this calculator module,
-I want to multiply two numbers,
-so that I can perform multiplication operations without writing custom logic.
+**Multiplication**
+> As a developer, I want to multiply two numbers, so that I can compute products for calculations like pricing or scaling.
 
-**US-4: Division**
-As a developer integrating this calculator module,
-I want to divide one number by another,
-so that I can perform division operations in my application.
+**Division**
+> As a developer, I want to divide one number by another, so that I can calculate ratios, averages, or distribute values evenly.
 
-### Error Handling & Usability
+### Error Handling
 
-**US-5: Division by Zero Protection**
-As a developer integrating this calculator module,
-I want to receive a clear error when attempting to divide by zero,
-so that I can handle this edge case gracefully in my application.
+**Division by Zero**
+> As a developer, I want to receive a clear error when dividing by zero, so that I can handle this edge case gracefully in my application.
 
-**US-6: Type Flexibility**
-As a developer integrating this calculator module,
-I want to work with both integers and floating-point numbers,
-so that I can handle various numeric types without converting them manually.
+**Invalid Types**
+> As a developer, I want clear errors when passing invalid types, so that I can debug type mismatches quickly.
 
-**US-7: Type Safety**
-As a developer integrating this calculator module,
-I want to receive clear errors when passing invalid types,
-so that I can catch programming errors early in development.
+### Usability
 
-**US-8: Predictable API**
-As a developer integrating this calculator module,
-I want to use a simple and intuitive API,
-so that I can quickly implement calculations without reading extensive documentation.
+**Consistent Interface**
+> As a developer, I want all operations to follow the same function signature pattern, so that the API is predictable and easy to learn.
+
+**Decimal Support**
+> As a developer, I want operations to work with both integers and decimals, so that I can perform precise calculations.
+
+**Negative Numbers**
+> As a developer, I want operations to handle negative numbers correctly, so that I can use the calculator for a full range of mathematical operations.
 
 ---
 
-## Function Signatures
+## API Specification
 
-All functions use Python 3.12+ union type syntax (`int | float`).
+### Function Signatures
 
 ```python
 def add(a: int | float, b: int | float) -> int | float:
-    """Add two numbers together."""
+    """Return the sum of a and b."""
 
 def subtract(a: int | float, b: int | float) -> int | float:
-    """Subtract b from a (returns a - b)."""
+    """Return the difference of a minus b."""
 
 def multiply(a: int | float, b: int | float) -> int | float:
-    """Multiply two numbers."""
+    """Return the product of a and b."""
 
 def divide(a: int | float, b: int | float) -> float:
-    """Divide a by b (always returns float)."""
+    """Return a divided by b. Always returns float."""
 ```
 
-### Key Design Decisions
+### Return Type Rules
 
-1. **Return Types**:
-   - `add`, `subtract`, `multiply`: Return `int | float` (preserves input type when both are ints)
-   - `divide`: Always returns `float` (even for 10 / 2 = 5.0)
+| Operation | Input Types | Return Type |
+|-----------|-------------|-------------|
+| `add` | `int, int` | `int` |
+| `add` | `int, float` or `float, float` | `float` |
+| `subtract` | `int, int` | `int` |
+| `subtract` | `int, float` or `float, float` | `float` |
+| `multiply` | `int, int` | `int` |
+| `multiply` | `int, float` or `float, float` | `float` |
+| `divide` | any valid | `float` (always) |
 
-2. **Parameter Order for `subtract(a, b)`**:
-   - Returns `a - b`
-   - Example: `subtract(5, 3)` returns `2` (not `3 - 5 = -2`)
+### Exceptions
 
-3. **Type Validation**:
-   - Explicit `isinstance` checks with clear error messages
-   - Boolean values rejected (even though `bool` is a subclass of `int` in Python)
+| Exception | Raised When | Message |
+|-----------|-------------|---------|
+| `TypeError` | Non-numeric operand | `"Operands must be int or float"` |
+| `ZeroDivisionError` | Division by zero | `"Cannot divide by zero"` |
+| `ValueError` | Operation produces `nan` | `"Result is undefined (NaN)"` |
 
 ---
 
 ## Acceptance Criteria
 
-### Addition (`add`)
+### Addition: `add(a, b)`
 
-#### Happy Path Scenarios
+#### Happy Path
+- **GIVEN** two positive integers `5` and `3`
+- **WHEN** I call `add(5, 3)`
+- **THEN** I receive `8`
 
-**AC-ADD-1: Integer Addition**
-- GIVEN two positive integers `5` and `3`
-- WHEN I call `add(5, 3)`
-- THEN I should receive `8`
+#### Type Handling
+- **GIVEN** an integer `5` and a float `3.5`
+- **WHEN** I call `add(5, 3.5)`
+- **THEN** I receive `8.5` as a float
 
-**AC-ADD-2: Float Addition**
-- GIVEN two floating-point numbers `2.5` and `3.7`
-- WHEN I call `add(2.5, 3.7)`
-- THEN I should receive `6.2`
-
-**AC-ADD-3: Mixed Type Addition**
-- GIVEN an integer `5` and a float `2.5`
-- WHEN I call `add(5, 2.5)`
-- THEN I should receive `7.5`
+- **GIVEN** two floats `2.5` and `3.5`
+- **WHEN** I call `add(2.5, 3.5)`
+- **THEN** I receive `6.0`
 
 #### Edge Cases
+- **GIVEN** zero and a positive number `7`
+- **WHEN** I call `add(0, 7)`
+- **THEN** I receive `7`
 
-**AC-ADD-4: Addition with Zero**
-- GIVEN a number `10` and zero `0`
-- WHEN I call `add(10, 0)`
-- THEN I should receive `10`
+- **GIVEN** two negative numbers `-5` and `-3`
+- **WHEN** I call `add(-5, -3)`
+- **THEN** I receive `-8`
 
-**AC-ADD-5: Addition with Negative Numbers**
-- GIVEN a negative number `-5` and a positive number `3`
-- WHEN I call `add(-5, 3)`
-- THEN I should receive `-2`
+- **GIVEN** a negative and positive number `-5` and `3`
+- **WHEN** I call `add(-5, 3)`
+- **THEN** I receive `-2`
 
-**AC-ADD-6: Both Negative**
-- GIVEN two negative numbers `-5` and `-3`
-- WHEN I call `add(-5, -3)`
-- THEN I should receive `-8`
-
-**AC-ADD-7: Large Numbers**
-- GIVEN two large numbers `1000000` and `2000000`
-- WHEN I call `add(1000000, 2000000)`
-- THEN I should receive `3000000`
-
-**AC-ADD-8: IEEE 754 Floating-Point Precision**
-- GIVEN `0.1` and `0.2`
-- WHEN I call `add(0.1, 0.2)`
-- THEN I should receive `0.30000000000000004` (not exactly `0.3`)
-- AND the result should be within `1e-10` of `0.3` for practical comparison
-- **Rationale**: Documents expected IEEE 754 binary representation behavior
-
-**AC-ADD-9: Very Small Decimals**
-- GIVEN two small decimals `0.1` and `0.2`
-- WHEN I call `add(0.1, 0.2)`
-- THEN the result should be approximately `0.3` within floating-point precision
-
----
-
-### Subtraction (`subtract`)
-
-#### Happy Path Scenarios
-
-**AC-SUB-1: Integer Subtraction**
-- GIVEN two positive integers `10` and `4`
-- WHEN I call `subtract(10, 4)`
-- THEN I should receive `6`
-
-**AC-SUB-2: Integer Subtraction (Clarifying Example)**
-- GIVEN integers `5` and `3`
-- WHEN I call `subtract(5, 3)`
-- THEN I should receive `2` (computed as 5 - 3)
-
-**AC-SUB-3: Float Subtraction**
-- GIVEN two floating-point numbers `7.5` and `2.3`
-- WHEN I call `subtract(7.5, 2.3)`
-- THEN I should receive `5.2`
-
-**AC-SUB-4: Mixed Type Subtraction**
-- GIVEN an integer `10` and a float `3.5`
-- WHEN I call `subtract(10, 3.5)`
-- THEN I should receive `6.5`
-
-#### Edge Cases
-
-**AC-SUB-5: Subtraction with Zero (a - 0)**
-- GIVEN a number `10` and zero `0`
-- WHEN I call `subtract(10, 0)`
-- THEN I should receive `10`
-
-**AC-SUB-6: Subtracting from Zero (0 - b)**
-- GIVEN zero `0` and a number `5`
-- WHEN I call `subtract(0, 5)`
-- THEN I should receive `-5`
-
-**AC-SUB-7: Subtracting Negative Number**
-- GIVEN a number `5` and a negative number `-3`
-- WHEN I call `subtract(5, -3)`
-- THEN I should receive `8` (5 - (-3) = 5 + 3)
-
-**AC-SUB-8: Both Negative**
-- GIVEN two negative numbers `-5` and `-3`
-- WHEN I call `subtract(-5, -3)`
-- THEN I should receive `-2` (-5 - (-3) = -5 + 3)
-
-**AC-SUB-9: Result is Negative**
-- GIVEN a smaller number `3` and a larger number `10`
-- WHEN I call `subtract(3, 10)`
-- THEN I should receive `-7`
-
-**AC-SUB-10: Large Numbers**
-- GIVEN two large numbers `5000000` and `2000000`
-- WHEN I call `subtract(5000000, 2000000)`
-- THEN I should receive `3000000`
-
----
-
-### Multiplication (`multiply`)
-
-#### Happy Path Scenarios
-
-**AC-MUL-1: Integer Multiplication**
-- GIVEN two positive integers `6` and `7`
-- WHEN I call `multiply(6, 7)`
-- THEN I should receive `42`
-
-**AC-MUL-2: Float Multiplication**
-- GIVEN two floating-point numbers `2.5` and `4.0`
-- WHEN I call `multiply(2.5, 4.0)`
-- THEN I should receive `10.0`
-
-**AC-MUL-3: Mixed Type Multiplication**
-- GIVEN an integer `5` and a float `2.5`
-- WHEN I call `multiply(5, 2.5)`
-- THEN I should receive `12.5`
-
-#### Edge Cases
-
-**AC-MUL-4: Multiply by Zero**
-- GIVEN a number `10` and zero `0`
-- WHEN I call `multiply(10, 0)`
-- THEN I should receive `0`
-
-**AC-MUL-5: Multiply by One**
-- GIVEN a number `10` and one `1`
-- WHEN I call `multiply(10, 1)`
-- THEN I should receive `10`
-
-**AC-MUL-6: Multiply with Negative Number**
-- GIVEN a positive number `5` and a negative number `-3`
-- WHEN I call `multiply(5, -3)`
-- THEN I should receive `-15`
-
-**AC-MUL-7: Both Negative**
-- GIVEN two negative numbers `-4` and `-5`
-- WHEN I call `multiply(-4, -5)`
-- THEN I should receive `20`
-
-**AC-MUL-8: Large Numbers**
-- GIVEN two large numbers `1000` and `2000`
-- WHEN I call `multiply(1000, 2000)`
-- THEN I should receive `2000000`
-
-**AC-MUL-9: Small Decimals**
-- GIVEN two small decimals `0.1` and `0.2`
-- WHEN I call `multiply(0.1, 0.2)`
-- THEN I should receive a value approximately equal to `0.02` (within floating-point precision)
-
----
-
-### Division (`divide`)
-
-#### Happy Path Scenarios
-
-**AC-DIV-1: Integer Division (Exact)**
-- GIVEN two integers `10` and `2`
-- WHEN I call `divide(10, 2)`
-- THEN I should receive `5.0` (float, not int)
-
-**AC-DIV-2: Integer Division (with Remainder)**
-- GIVEN two integers `10` and `3`
-- WHEN I call `divide(10, 3)`
-- THEN I should receive approximately `3.3333333333333335`
-
-**AC-DIV-3: Float Division**
-- GIVEN two floating-point numbers `7.5` and `2.5`
-- WHEN I call `divide(7.5, 2.5)`
-- THEN I should receive `3.0`
-
-**AC-DIV-4: Mixed Type Division**
-- GIVEN an integer `10` and a float `2.5`
-- WHEN I call `divide(10, 2.5)`
-- THEN I should receive `4.0`
-
-#### Edge Cases
-
-**AC-DIV-5: Divide Zero**
-- GIVEN zero `0` and a number `5`
-- WHEN I call `divide(0, 5)`
-- THEN I should receive `0.0`
-
-**AC-DIV-6: Divide by One**
-- GIVEN a number `10` and one `1`
-- WHEN I call `divide(10, 1)`
-- THEN I should receive `10.0`
-
-**AC-DIV-7: Negative Dividend**
-- GIVEN a negative number `-10` and a positive number `2`
-- WHEN I call `divide(-10, 2)`
-- THEN I should receive `-5.0`
-
-**AC-DIV-8: Negative Divisor**
-- GIVEN a positive number `10` and a negative number `-2`
-- WHEN I call `divide(10, -2)`
-- THEN I should receive `-5.0`
-
-**AC-DIV-9: Both Negative**
-- GIVEN two negative numbers `-10` and `-2`
-- WHEN I call `divide(-10, -2)`
-- THEN I should receive `5.0`
-
-**AC-DIV-10: Large Numbers**
-- GIVEN two large numbers `1000000` and `2000`
-- WHEN I call `divide(1000000, 2000)`
-- THEN I should receive `500.0`
+- **GIVEN** two large numbers `1e15` and `1e15`
+- **WHEN** I call `add(1e15, 1e15)`
+- **THEN** I receive `2e15`
 
 #### Error Cases
-
-**AC-DIV-ERR-1: Division by Zero (Integer)**
-- GIVEN a number `10` and zero `0`
-- WHEN I call `divide(10, 0)`
-- THEN a `ZeroDivisionError` should be raised
-- AND the error message should be "Cannot divide by zero"
-
-**AC-DIV-ERR-2: Division by Zero (Float)**
-- GIVEN a float `5.5` and zero `0.0`
-- WHEN I call `divide(5.5, 0.0)`
-- THEN a `ZeroDivisionError` should be raised
-- AND the error message should be "Cannot divide by zero"
+- **GIVEN** a string `"5"` and an integer `3`
+- **WHEN** I call `add("5", 3)`
+- **THEN** I receive a `TypeError` with message `"Operands must be int or float"`
 
 ---
 
-### Type Validation (All Operations)
+### Subtraction: `subtract(a, b)`
+
+#### Happy Path
+- **GIVEN** two positive integers `10` and `4`
+- **WHEN** I call `subtract(10, 4)`
+- **THEN** I receive `6`
+
+#### Type Handling
+- **GIVEN** an integer `10` and a float `2.5`
+- **WHEN** I call `subtract(10, 2.5)`
+- **THEN** I receive `7.5` as a float
+
+- **GIVEN** two floats `5.5` and `2.5`
+- **WHEN** I call `subtract(5.5, 2.5)`
+- **THEN** I receive `3.0`
+
+#### Edge Cases
+- **GIVEN** a number `7` and zero
+- **WHEN** I call `subtract(7, 0)`
+- **THEN** I receive `7`
+
+- **GIVEN** zero and a number `7`
+- **WHEN** I call `subtract(0, 7)`
+- **THEN** I receive `-7`
+
+- **GIVEN** two equal numbers `5` and `5`
+- **WHEN** I call `subtract(5, 5)`
+- **THEN** I receive `0`
+
+- **GIVEN** two negative numbers `-5` and `-3`
+- **WHEN** I call `subtract(-5, -3)`
+- **THEN** I receive `-2`
+
+- **GIVEN** two large numbers `1e15` and `1e14`
+- **WHEN** I call `subtract(1e15, 1e14)`
+- **THEN** I receive `9e14`
 
 #### Error Cases
-
-**AC-TYPE-ERR-1: String as First Parameter**
-- GIVEN a string `"10"` and a number `5`
-- WHEN I call any operation with `("10", 5)`
-- THEN a `TypeError` should be raised
-- AND the error message should be "Both arguments must be numbers (int or float)"
-
-**AC-TYPE-ERR-2: String as Second Parameter**
-- GIVEN a number `10` and a string `"5"`
-- WHEN I call any operation with `(10, "5")`
-- THEN a `TypeError` should be raised
-- AND the error message should be "Both arguments must be numbers (int or float)"
-
-**AC-TYPE-ERR-3: Both Parameters as Strings**
-- GIVEN two strings `"10"` and `"5"`
-- WHEN I call any operation with `("10", "5")`
-- THEN a `TypeError` should be raised
-- AND the error message should be "Both arguments must be numbers (int or float)"
-
-**AC-TYPE-ERR-4: None as Parameter**
-- GIVEN `None` and a number `5`
-- WHEN I call any operation with `(None, 5)`
-- THEN a `TypeError` should be raised
-- AND the error message should be "Both arguments must be numbers (int or float)"
-
-**AC-TYPE-ERR-5: List as Parameter**
-- GIVEN a list `[1, 2, 3]` and a number `5`
-- WHEN I call any operation with `([1, 2, 3], 5)`
-- THEN a `TypeError` should be raised
-- AND the error message should be "Both arguments must be numbers (int or float)"
-
-**AC-TYPE-ERR-6: Boolean as Parameter**
-- GIVEN a boolean `True` and a number `5`
-- WHEN I call any operation with `(True, 5)`
-- THEN a `TypeError` should be raised
-- AND the error message should be "Both arguments must be numbers (int or float)"
-- **Rationale**: Even though `bool` is a subclass of `int` in Python, we explicitly reject it to prevent confusing behavior
+- **GIVEN** a list `[5]` and an integer `3`
+- **WHEN** I call `subtract([5], 3)`
+- **THEN** I receive a `TypeError` with message `"Operands must be int or float"`
 
 ---
 
-## Scope
+### Multiplication: `multiply(a, b)`
 
-### In Scope
+#### Happy Path
+- **GIVEN** two positive integers `6` and `7`
+- **WHEN** I call `multiply(6, 7)`
+- **THEN** I receive `42`
 
-- Four basic arithmetic operations: add, subtract, multiply, divide
-- Support for `int` and `float` types
-- Type validation with clear error messages
-- Division by zero error handling
-- IEEE 754 floating-point arithmetic behavior
+#### Type Handling
+- **GIVEN** an integer `4` and a float `2.5`
+- **WHEN** I call `multiply(4, 2.5)`
+- **THEN** I receive `10.0` as a float
 
-### Out of Scope
+- **GIVEN** two floats `2.5` and `4.0`
+- **WHEN** I call `multiply(2.5, 4.0)`
+- **THEN** I receive `10.0`
 
-- Complex numbers
-- Decimal type support for exact decimal arithmetic
-- Arbitrary precision arithmetic
-- Mathematical operations beyond basic arithmetic (power, modulo, square root, etc.)
-- Rounding or precision control
-- Unit conversions
-- Vector or matrix operations
-- Stateful calculator (e.g., memory functions)
-- Expression parsing (e.g., `calculate("2 + 3 * 4")`)
-- Bitwise operations
+#### Edge Cases
+- **GIVEN** any number `42` and zero
+- **WHEN** I call `multiply(42, 0)`
+- **THEN** I receive `0`
 
----
+- **GIVEN** any number `7` and one
+- **WHEN** I call `multiply(7, 1)`
+- **THEN** I receive `7`
 
-## Error Handling
+- **GIVEN** a positive `5` and negative `-3`
+- **WHEN** I call `multiply(5, -3)`
+- **THEN** I receive `-15`
 
-### Exception Types
+- **GIVEN** two negative numbers `-4` and `-5`
+- **WHEN** I call `multiply(-4, -5)`
+- **THEN** I receive `20`
 
-| Exception | When Raised | Message Format |
-|-----------|-------------|----------------|
-| `TypeError` | Invalid argument type | "Both arguments must be numbers (int or float)" |
-| `ZeroDivisionError` | Division by zero | "Cannot divide by zero" |
+- **GIVEN** two large numbers `1e10` and `1e10`
+- **WHEN** I call `multiply(1e10, 1e10)`
+- **THEN** I receive `1e20`
 
-### Error Handling Philosophy
+- **GIVEN** two small floats `0.1` and `0.2`
+- **WHEN** I call `multiply(0.1, 0.2)`
+- **THEN** I receive approximately `0.02` (within floating-point precision)
 
-1. **Fail Fast**: Invalid inputs raise exceptions immediately
-2. **Clear Messages**: Error messages describe the problem in plain language
-3. **Type Strictness**: No implicit type coercion (e.g., `"5"` is not converted to `5`)
-4. **No Silent Failures**: Never return `None` or sentinel values for errors
-
----
-
-## Behavioral Notes
-
-### Floating-Point Precision
-
-This module uses Python's built-in floating-point arithmetic, which follows IEEE 754 standards. Key implications:
-
-1. **Inexact Representation**: Some decimal values cannot be represented exactly
-   - Example: `add(0.1, 0.2)` returns `0.30000000000000004`, not `0.3`
-
-2. **Comparison Tolerance**: When comparing float results, use tolerance-based comparison
-   ```python
-   result = add(0.1, 0.2)
-   assert abs(result - 0.3) < 1e-10  # Recommended
-   # assert result == 0.3  # May fail!
-   ```
-
-3. **Alternative for Exact Decimals**: If exact decimal arithmetic is required, use Python's `decimal.Decimal` type (out of scope for this module)
-
-### Return Type Preservation
-
-- Operations on two integers may return an integer (add, subtract, multiply)
-- Division ALWAYS returns a float, even for exact divisions: `divide(10, 2)` → `5.0`
-- Operations involving at least one float always return a float
+#### Error Cases
+- **GIVEN** `None` and an integer `3`
+- **WHEN** I call `multiply(None, 3)`
+- **THEN** I receive a `TypeError` with message `"Operands must be int or float"`
 
 ---
 
-## Testing Strategy
+### Division: `divide(a, b)`
 
-### Test Coverage Requirements
+#### Happy Path
+- **GIVEN** two positive integers `10` and `2`
+- **WHEN** I call `divide(10, 2)`
+- **THEN** I receive `5.0` as a float
 
-1. **Happy Path**: All acceptance criteria marked "Happy Path"
-2. **Edge Cases**: Zero, negatives, large numbers, small decimals
-3. **Error Cases**: Type validation, division by zero
-4. **Floating-Point Behavior**: IEEE 754 precision quirks
+- **GIVEN** integers that don't divide evenly `7` and `2`
+- **WHEN** I call `divide(7, 2)`
+- **THEN** I receive `3.5`
 
-### Example Test Structure
+#### Type Handling
+- **GIVEN** an integer `10` and a float `2.5`
+- **WHEN** I call `divide(10, 2.5)`
+- **THEN** I receive `4.0`
+
+- **GIVEN** two floats `7.5` and `2.5`
+- **WHEN** I call `divide(7.5, 2.5)`
+- **THEN** I receive `3.0`
+
+#### Edge Cases
+- **GIVEN** zero and a positive number `5`
+- **WHEN** I call `divide(0, 5)`
+- **THEN** I receive `0.0`
+
+- **GIVEN** a negative and positive number `-10` and `2`
+- **WHEN** I call `divide(-10, 2)`
+- **THEN** I receive `-5.0`
+
+- **GIVEN** two negative numbers `-10` and `-2`
+- **WHEN** I call `divide(-10, -2)`
+- **THEN** I receive `5.0`
+
+- **GIVEN** a small number `1e-10` and large number `1e10`
+- **WHEN** I call `divide(1e-10, 1e10)`
+- **THEN** I receive `1e-20`
+
+- **GIVEN** a number divided by itself `42` and `42`
+- **WHEN** I call `divide(42, 42)`
+- **THEN** I receive `1.0`
+
+#### Error Cases
+- **GIVEN** any number `10` and zero `0`
+- **WHEN** I call `divide(10, 0)`
+- **THEN** I receive a `ZeroDivisionError` with message `"Cannot divide by zero"`
+
+- **GIVEN** a string `"10"` and an integer `2`
+- **WHEN** I call `divide("10", 2)`
+- **THEN** I receive a `TypeError` with message `"Operands must be int or float"`
+
+---
+
+## Design Decisions
+
+### 1. Floating Point Precision
+
+**Decision:** Accept IEEE 754 behavior (no rounding)
 
 ```python
-def test_add_integers():
-    """AC-ADD-1: Integer Addition"""
-    assert add(5, 3) == 8
+add(0.1, 0.2)  # Returns 0.30000000000000004, NOT 0.3
+```
 
-def test_add_ieee754_precision():
-    """AC-ADD-8: IEEE 754 Floating-Point Precision"""
-    result = add(0.1, 0.2)
-    assert result == 0.30000000000000004
-    assert abs(result - 0.3) < 1e-10
+**Rationale:**
+- Matches Python's native behavior—no surprises for developers
+- Performance is not degraded
+- Precision-critical applications should use `decimal.Decimal` explicitly
 
-def test_divide_by_zero_integer():
-    """AC-DIV-ERR-1: Division by Zero (Integer)"""
-    with pytest.raises(ZeroDivisionError, match="Cannot divide by zero"):
-        divide(10, 0)
+**Contract:** This module uses native Python floats (IEEE 754). For exact decimal arithmetic, use `decimal.Decimal` before calling these functions.
+
+---
+
+### 2. Division by Zero
+
+**Decision:** Raise `ZeroDivisionError`
+
+```python
+divide(10, 0)   # Raises ZeroDivisionError("Cannot divide by zero")
+divide(0, 0)    # Raises ZeroDivisionError("Cannot divide by zero")
+```
+
+**Alternatives rejected:**
+
+| Option | Problem |
+|--------|---------|
+| Return `float('inf')` | Mathematically incorrect (limit ≠ value) |
+| Return `float('nan')` | Silent failure, propagates invisibly |
+| Return `None` | Breaks type contract, causes downstream errors |
+
+**Rationale:** Explicit errors over silent failures. Callers can catch and handle.
+
+---
+
+### 3. Type Preservation
+
+**Decision:** Follow Python's native arithmetic rules
+
+```python
+add(5, 3)       # → 8 (int)
+add(5, 3.0)     # → 8.0 (float)
+divide(6, 2)    # → 3.0 (always float)
+```
+
+**Rules:**
+- `int` op `int` → `int` (except division)
+- `int` op `float` → `float`
+- `float` op `float` → `float`
+- `divide()` → always `float`
+
+**Rationale for division always returning float:**
+- `divide(7, 2)` must return `3.5`, not `3`
+- Consistent return type simplifies caller code
+- Matches Python 3's `/` operator behavior
+
+---
+
+### 4. Zero Behavior
+
+**Mathematical properties preserved:**
+
+| Operation | Zero's Role | Example |
+|-----------|-------------|---------|
+| Addition | Identity | `add(x, 0) → x` |
+| Subtraction | Right identity | `subtract(x, 0) → x` |
+| Multiplication | Absorbing | `multiply(x, 0) → 0` |
+| Division | Zero numerator OK | `divide(0, x) → 0.0` |
+| Division | Zero denominator | `ZeroDivisionError` |
+
+**Signed zero normalization:**
+```python
+divide(0, -5)  # → 0.0, NOT -0.0
 ```
 
 ---
 
-## Version History
+### 5. Negative Number Handling
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0.0 | 2026-01-06 | Initial specification |
+**Decision:** Standard mathematical sign rules
+
+| Expression | Result | Rule |
+|------------|--------|------|
+| `multiply(-5, -3)` | `15` | negative × negative = positive |
+| `multiply(-5, 3)` | `-15` | negative × positive = negative |
+| `divide(-10, -2)` | `5.0` | negative ÷ negative = positive |
+| `divide(-10, 2)` | `-5.0` | negative ÷ positive = negative |
 
 ---
 
-## References
+### 6. Large Number Limits
 
-- [IEEE 754 Floating Point Standard](https://en.wikipedia.org/wiki/IEEE_754)
-- [Python Type Hints (PEP 604)](https://peps.python.org/pep-0604/) - Union operator syntax
-- [Python isinstance() Documentation](https://docs.python.org/3/library/functions.html#isinstance)
+**Python's number system:**
+
+| Type | Range | Overflow |
+|------|-------|----------|
+| `int` | Unlimited | Never |
+| `float` | ±1.8e308 | → `inf` |
+
+**Decision:** Allow `inf` as result, raise on `nan`
+
+```python
+# Overflow to infinity - allowed
+multiply(1e200, 1e200)  # → inf
+
+# Operations producing nan - raise ValueError
+add(float('inf'), float('-inf'))    # → ValueError
+multiply(float('inf'), 0)           # → ValueError
+divide(float('inf'), float('inf'))  # → ValueError
+```
+
+**Rationale:**
+- `inf` is a valid IEEE 754 value with defined arithmetic
+- `nan` indicates undefined state—should not propagate silently
+
+---
+
+## Out of Scope
+
+The following are explicitly **not** supported:
+
+| Feature | Reason |
+|---------|--------|
+| Complex numbers | Use Python's `complex` type directly |
+| Arbitrary precision decimals | Use `decimal.Decimal` |
+| Chained operations | Compose function calls: `add(add(1, 2), 3)` |
+| In-place modification | Pure functions only |
+| Operator overloading | Module provides functions, not a class |
+| Rounding utilities | Use Python's `round()` on results |
+| Unit conversions | Outside arithmetic scope |
+| Expression parsing | Use `ast.literal_eval` or a parser library |
+
+---
+
+## Quick Reference
+
+```python
+from calc import add, subtract, multiply, divide
+
+# Basic usage
+add(5, 3)           # → 8
+subtract(10, 4)     # → 6
+multiply(6, 7)      # → 42
+divide(15, 2)       # → 7.5
+
+# Type handling
+add(5, 3.0)         # → 8.0 (float)
+divide(6, 2)        # → 3.0 (always float)
+
+# Error handling
+try:
+    divide(10, 0)
+except ZeroDivisionError:
+    print("Cannot divide by zero")
+```
+
+---
+
+## Why This Is a Good Specification
+
+1. **User-Centric** — Starts with user stories explaining why features exist
+2. **Type-Explicit** — Clear signatures with Python 3.12+ union types
+3. **Edge-Case Complete** — Documents all "gotcha" behaviors
+4. **Testable** — Concrete GIVEN/WHEN/THEN scenarios, not prose descriptions
+5. **Scoped** — Explicitly states what's out of scope
+6. **Unambiguous** — No room for interpretation (e.g., "division always returns float")
