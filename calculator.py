@@ -1,130 +1,150 @@
 """
-Basic calculator module with four operations: addition, subtraction, multiplication, and division.
+Calculator Module
 
-This module provides simple arithmetic operations for use by other developers.
-All functions accept integers and floats, and include proper type validation and error handling.
+A minimal, type-safe calculator providing four basic arithmetic operations.
+
+Note: Uses `from __future__ import annotations` for Python 3.8+ compatibility
+      with Python 3.10+ type hint syntax (int | float).
+
+Functions:
+    add: Return the sum of two numbers
+    subtract: Return the difference of two numbers
+    multiply: Return the product of two numbers
+    divide: Return the quotient of two numbers
 """
+
+from __future__ import annotations
+
+import math
+
+
+def _validate_operands(a: int | float, b: int | float) -> None:
+    """Validate that both operands are int or float (not bool)."""
+    if isinstance(a, bool) or isinstance(b, bool):
+        raise TypeError("Operands must be int or float")
+    if not isinstance(a, (int, float)) or not isinstance(b, (int, float)):
+        raise TypeError("Operands must be int or float")
+
+
+def _check_nan(result: int | float) -> None:
+    """Raise ValueError if result is NaN."""
+    if isinstance(result, float) and math.isnan(result):
+        raise ValueError("Result is undefined (NaN)")
 
 
 def add(a: int | float, b: int | float) -> int | float:
-    """
-    Add two numbers together.
+    """Return the sum of a and b.
 
     Args:
-        a: First number (int or float)
-        b: Second number (int or float)
+        a: First operand (int or float)
+        b: Second operand (int or float)
 
     Returns:
-        Sum of a and b
+        Sum of a and b. Returns int if both inputs are int, otherwise float.
 
     Raises:
-        TypeError: If either argument is not a number (int or float)
+        TypeError: If either operand is not int or float.
+        ValueError: If the result is NaN.
 
     Examples:
         >>> add(5, 3)
         8
-        >>> add(2.5, 3.7)
-        6.2
-        >>> add(5, 2.5)
-        7.5
+        >>> add(5, 3.5)
+        8.5
+        >>> add(-5, 3)
+        -2
     """
-    if not isinstance(a, (int, float)) or isinstance(a, bool):
-        raise TypeError("Both arguments must be numbers (int or float)")
-    if not isinstance(b, (int, float)) or isinstance(b, bool):
-        raise TypeError("Both arguments must be numbers (int or float)")
-
-    return a + b
+    _validate_operands(a, b)
+    result = a + b
+    _check_nan(result)
+    return result
 
 
 def subtract(a: int | float, b: int | float) -> int | float:
-    """
-    Subtract b from a.
+    """Return the difference of a minus b.
 
     Args:
-        a: Number to subtract from (int or float)
-        b: Number to subtract (int or float)
+        a: First operand (int or float)
+        b: Second operand (int or float)
 
     Returns:
-        Result of a - b
+        Difference (a - b). Returns int if both inputs are int, otherwise float.
 
     Raises:
-        TypeError: If either argument is not a number (int or float)
+        TypeError: If either operand is not int or float.
+        ValueError: If the result is NaN.
 
     Examples:
-        >>> subtract(5, 3)
-        2
         >>> subtract(10, 4)
         6
-        >>> subtract(3, 10)
+        >>> subtract(10, 2.5)
+        7.5
+        >>> subtract(0, 7)
         -7
     """
-    if not isinstance(a, (int, float)) or isinstance(a, bool):
-        raise TypeError("Both arguments must be numbers (int or float)")
-    if not isinstance(b, (int, float)) or isinstance(b, bool):
-        raise TypeError("Both arguments must be numbers (int or float)")
-
-    return a - b
+    _validate_operands(a, b)
+    result = a - b
+    _check_nan(result)
+    return result
 
 
 def multiply(a: int | float, b: int | float) -> int | float:
-    """
-    Multiply two numbers.
+    """Return the product of a and b.
 
     Args:
-        a: First number (int or float)
-        b: Second number (int or float)
+        a: First operand (int or float)
+        b: Second operand (int or float)
 
     Returns:
-        Product of a and b
+        Product of a and b. Returns int if both inputs are int, otherwise float.
 
     Raises:
-        TypeError: If either argument is not a number (int or float)
+        TypeError: If either operand is not int or float.
+        ValueError: If the result is NaN.
 
     Examples:
         >>> multiply(6, 7)
         42
-        >>> multiply(2.5, 4.0)
+        >>> multiply(4, 2.5)
         10.0
-        >>> multiply(5, 2.5)
-        12.5
+        >>> multiply(-4, -5)
+        20
     """
-    if not isinstance(a, (int, float)) or isinstance(a, bool):
-        raise TypeError("Both arguments must be numbers (int or float)")
-    if not isinstance(b, (int, float)) or isinstance(b, bool):
-        raise TypeError("Both arguments must be numbers (int or float)")
-
-    return a * b
+    _validate_operands(a, b)
+    result = a * b
+    _check_nan(result)
+    return result
 
 
 def divide(a: int | float, b: int | float) -> float:
-    """
-    Divide a by b.
+    """Return a divided by b.
 
     Args:
         a: Dividend (int or float)
         b: Divisor (int or float)
 
     Returns:
-        Result of a / b as a float
+        Quotient as float. Always returns float, even for exact divisions.
 
     Raises:
-        TypeError: If either argument is not a number (int or float)
-        ZeroDivisionError: If b is zero
+        TypeError: If either operand is not int or float.
+        ZeroDivisionError: If b is zero.
+        ValueError: If the result is NaN.
 
     Examples:
         >>> divide(10, 2)
         5.0
-        >>> divide(10, 3)
-        3.3333333333333335
-        >>> divide(7.5, 2.5)
-        3.0
+        >>> divide(7, 2)
+        3.5
+        >>> divide(-10, -2)
+        5.0
     """
-    if not isinstance(a, (int, float)) or isinstance(a, bool):
-        raise TypeError("Both arguments must be numbers (int or float)")
-    if not isinstance(b, (int, float)) or isinstance(b, bool):
-        raise TypeError("Both arguments must be numbers (int or float)")
-
-    if b == 0 or b == 0.0:
+    _validate_operands(a, b)
+    if b == 0:
         raise ZeroDivisionError("Cannot divide by zero")
-
-    return a / b
+    result = float(a) / float(b)
+    _check_nan(result)
+    # Normalize -0.0 to 0.0
+    if result == 0.0:
+        return 0.0
+    return result
